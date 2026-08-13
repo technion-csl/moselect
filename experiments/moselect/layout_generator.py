@@ -2411,7 +2411,7 @@ class LayoutGeneratorUtils(metaclass=Singleton):
             offset = int(row['startOffset'] % page_size)
             pages += list(range(start_page, end_page))
         start_offset = offset / LayoutGeneratorUtils.BASE_PAGE_4KB_SIZE
-        return pages
+        return [int(page) for page in pages]
 
     def calculateTlbCoverage(pebs_df, pages):
         """Sums the PEBS `TLB_COVERAGE` of the given pages.
@@ -2425,8 +2425,11 @@ class LayoutGeneratorUtils(metaclass=Singleton):
             float: Total PEBS-predicted TLB coverage percentage (0-100) of
             `pages`.
         """
-        print(f'==========> pages: {pages} <=============')
-        selected_pages = pebs_df.query(f'PAGE_NUMBER in {pages}')
+        normalized_pages = [int(page) for page in pages]
+        if 'PAGE_NUMBER' in pebs_df.columns:
+            pebs_df = pebs_df.copy()
+            pebs_df['PAGE_NUMBER'] = pebs_df['PAGE_NUMBER'].astype(int)
+        selected_pages = pebs_df[pebs_df['PAGE_NUMBER'].isin(normalized_pages)]
         return selected_pages['TLB_COVERAGE'].sum()
 
     def normalizePebsAccesses(pebs_mem_bins):
@@ -2453,7 +2456,8 @@ class LayoutGeneratorUtils(metaclass=Singleton):
         if pebs_df.empty:
             sys.exit('Input file does not contain page accesses information about the brk pool!')
         pebs_df = pebs_df[['PAGE_NUMBER', 'NUM_ACCESSES']]
-        pebs_df = pebs_df.reset_index()
+        pebs_df = pebs_df.reset_index(drop=True)
+        pebs_df['PAGE_NUMBER'] = pebs_df['PAGE_NUMBER'].astype(int)
 
         # transform NUM_ACCESSES from absolute number to percentage
         total_access = pebs_df['NUM_ACCESSES'].sum()
