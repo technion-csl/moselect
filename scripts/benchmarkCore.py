@@ -7,7 +7,10 @@ import shutil
 import shlex
 
 import signal
-import psutil
+try:
+    import psutil
+except ImportError:
+    psutil = None
 import os
 import os.path
 import sys
@@ -17,14 +20,17 @@ from pathlib import Path
 
 # try to kill all subprocesses if this script is killed by a signal from the user
 def killAllSubprocesses(signum, frame):
-    current_process = psutil.Process()
-    children = current_process.children(recursive=True)
-    for child in children:
-        print(f"Killing child process {child.pid}")
-        try:
-            os.kill(child.pid, signal.SIGTERM)
-        except ProcessLookupError:
-            pass # the child process may have terminated already
+    if psutil is None:
+        print("psutil is not installed; cannot enumerate child processes for cleanup.")
+    else:
+        current_process = psutil.Process()
+        children = current_process.children(recursive=True)
+        for child in children:
+            print(f"Killing child process {child.pid}")
+            try:
+                os.kill(child.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass # the child process may have terminated already
     sys.exit(f"Exiting due to a {signal.Signals(signum).name} signal")
 
 signal.signal(signal.SIGINT, killAllSubprocesses)
@@ -92,7 +98,8 @@ class BenchmarkRun:
             pre_run_filename = 'warmup.sh'
         else:
             pre_run_filename = pre_run_filename[0]
-        subprocess.run(pre_run_filename, stdout=self._log_file, stderr=self._log_file, check=True)
+        pre_run_path = self._run_dir / pre_run_filename
+        subprocess.run([str(pre_run_path)], stdout=self._log_file, stderr=self._log_file, check=True)
 
     def run(self, num_threads: int, submit_command: str):
         print(f'{self._benchmark_dir}: running\n\t{submit_command} ./run.sh')
@@ -148,7 +155,8 @@ class BenchmarkRun:
             post_run_filename = post_run_filename[0]
         # sleep a bit to let the filesystem recover before running postrun.sh
         time.sleep(5)  # seconds
-        subprocess.run(post_run_filename, stdout=self._log_file, stderr=self._log_file, check=True)
+        post_run_path = self._run_dir / post_run_filename
+        subprocess.run([str(post_run_path)], stdout=self._log_file, stderr=self._log_file, check=True)
 
     def move_files_to_output_dir(self):
         # get updated list with all files in the run_dir

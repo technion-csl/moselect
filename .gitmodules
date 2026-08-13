@@ -1,3 +1,0 @@
-[submodule "mosalloc"]
-	path = mosalloc
-	url = git@github.com:magbarya/mosalloc_dev.git

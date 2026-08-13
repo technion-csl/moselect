@@ -10,7 +10,6 @@ SUBMODULES := \
 	genetic_selector \
 	moselect \
 	bayesian_optimization \
-	mosrange \
 	mosmodel \
 	all_data \
 	vanilla
