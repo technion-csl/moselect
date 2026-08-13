@@ -2425,8 +2425,8 @@ class LayoutGeneratorUtils(metaclass=Singleton):
             float: Total PEBS-predicted TLB coverage percentage (0-100) of
             `pages`.
         """
-        selected_pages = pebs_df.query(
-                'PAGE_NUMBER in {pages}'.format(pages=pages))
+        print(f'==========> pages: {pages} <=============')
+        selected_pages = pebs_df.query(f'PAGE_NUMBER in {pages}')
         return selected_pages['TLB_COVERAGE'].sum()
 
     def normalizePebsAccesses(pebs_mem_bins):
