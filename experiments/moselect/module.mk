@@ -26,6 +26,9 @@ $(LAYOUT_FILES): $(MOSELECT_EXPERIMENT)/layouts/%.csv: $(MEMORY_FOOTPRINT_FILE) 
 		--exp_dir=$(dir $@)/.. \
 		--results_file=$(MOSELECT_RESULTS)/median.csv
 
+$(MOSELECT_EXPERIMENT)/clean:
+	rm -f $(dir $@)/*.log
+
 override undefine NUM_LAYOUTS
 override undefine NUM_OF_REPEATS
 override undefine LAYOUTS
