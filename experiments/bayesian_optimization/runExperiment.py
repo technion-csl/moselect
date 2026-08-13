@@ -184,7 +184,9 @@ class BayesianExperiment:
         self.num_hugepages = math.ceil(self.memory_footprint / self.hugepage_size) # bit vector length
         self.num_default_hugepages = math.ceil(self.memory_footprint / BayesianExperiment.DEFAULT_HUGEPAGE_SIZE)
 
-        self.dimension_size_in_bits = 64 #sys.getsizeof(int)
+        # scikit-optimize and NumPy integer paths are signed-int based.
+        # Keep each dimension within int64 range to avoid overflow in ask()/rvs().
+        self.dimension_size_in_bits = 63
         self.dimension_capacity = 2**self.dimension_size_in_bits
         # the num_dimensions is calculated for (num_hugepages + 1) because
         # an additional bit may be required when converting a binary number to gray code
@@ -206,7 +208,9 @@ class BayesianExperiment:
         self.dimension_min_val = 0
         self.dimension_max_val = self.dimension_capacity - 1
         self.last_dimension_size_in_bits = self.gray_layout_bit_vector_length % self.dimension_size_in_bits
-        self.last_dimension_max_val = 2**self.last_dimension_size_in_bits
+        if self.last_dimension_size_in_bits == 0:
+            self.last_dimension_size_in_bits = self.dimension_size_in_bits
+        self.last_dimension_max_val = (2**self.last_dimension_size_in_bits) - 1
         self.dimensions = [Integer(self.dimension_min_val, self.dimension_max_val, name=f'mem_region_{i}') for i in range(self.num_dimensions - 1)]
         self.dimensions += [Integer(self.dimension_min_val, self.last_dimension_max_val, name=f'mem_region_{self.num_dimensions-1}')]
 
@@ -725,11 +729,11 @@ class BayesianExperiment:
         '''
         chebyshev_dist = (chebgauss(num_samples)[0] + np.ones(num_samples)) * 0.5
         chebyshev_dist = chebyshev_dist.reshape((num_samples, 1))
-        dimensions_space = np.full((1, self.num_dimensions), fill_value=self.dimension_max_val)
+        dimensions_space = np.full((1, self.num_dimensions), fill_value=self.dimension_max_val, dtype=np.int64)
         dimensions_space[0,-1] = self.last_dimension_max_val
 
         samples = chebyshev_dist * dimensions_space
-        samples = samples.astype(np.uint64)
+        samples = np.rint(samples).astype(np.int64)
 
         decompressed_samples = [self.decompress_memory_layout(s) for s in samples]
         return decompressed_samples
