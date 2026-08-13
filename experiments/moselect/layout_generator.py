@@ -986,6 +986,8 @@ class LayoutGenerator():
             tuple[list[int] | None, float]: The augmented page list and its
             coverage, or ``(None, 0)`` if no matching subset was found.
         """
+        base_pages = [int(page) for page in base_pages]
+        working_set = [int(page) for page in working_set]
         base_pages_pebs = LayoutGeneratorUtils.calculateTlbCoverage(self.pebs_df, base_pages)
 
         if desired_pebs_coverage < base_pages_pebs:
@@ -1015,7 +1017,7 @@ class LayoutGenerator():
         max_pebs_coverage = desired_pebs_coverage + epsilon
         total_weight = base_pages_pebs
         for index, row in df.iterrows():
-            page = row['PAGE_NUMBER']
+            page = int(row['PAGE_NUMBER'])
             weight = row['TLB_COVERAGE']
             updated_total_weight = total_weight + weight
             if updated_total_weight < max_pebs_coverage:
@@ -1025,9 +1027,9 @@ class LayoutGenerator():
                 break
         if len(added_pages) == 0:
             return None, 0
-        new_pages = base_pages + added_pages
+        new_pages = [int(page) for page in (base_pages + added_pages)]
         new_pages.sort()
-        new_pebs_coverage = self.pebs_df.query(f'PAGE_NUMBER in {new_pages}')['TLB_COVERAGE'].sum()
+        new_pebs_coverage = LayoutGeneratorUtils.calculateTlbCoverage(self.pebs_df, new_pages)
 
         if max_pebs_coverage < new_pebs_coverage or new_pebs_coverage < min_pebs_coverage:
             #print(f'Could not find pages subset with a coverage of {desired_pebs_coverage}')
@@ -1194,11 +1196,16 @@ class LayoutGenerator():
         that covers desired_pebs_coverage, then try to remove from the
         remove_working_set and retry finding a new pages subset.
         """
+        base_layout_pages = [int(page) for page in base_layout_pages]
+        add_working_set = [int(page) for page in add_working_set]
+
         if len(add_working_set) == 0:
             return None, 0
 
         if remove_working_set is None:
             remove_working_set = []
+        else:
+            remove_working_set = [int(page) for page in remove_working_set]
 
         # make sure that remove_working_set is a subset of the base-layout pages
         assert len( set(remove_working_set) - set(base_layout_pages) ) == 0
@@ -1464,10 +1471,12 @@ class LayoutGenerator():
             tuple[list[int] | None, float]: The reduced page set and its
             PEBS coverage, or ``(None, 0)`` if no pages could be removed.
         """
-        base_layout_pages = LayoutGeneratorUtils.getLayoutHugepages(base_layout, self.exp_dir)
+        base_layout_pages = [int(page) for page in LayoutGeneratorUtils.getLayoutHugepages(base_layout, self.exp_dir)]
         base_layout_coverage = self.state_log.getPebsCoverage(base_layout)
         if working_set is None:
             working_set = base_layout_pages
+        else:
+            working_set = [int(page) for page in working_set]
         df = self.pebs_df.query(f'PAGE_NUMBER in {working_set}')
         df = df.sort_values('TLB_COVERAGE', ascending=tail)
         print(f'[DEBUG]: removePages: {base_layout} has {len(base_layout_pages)} total pages, and {len(df)} pages in pebs as candidates to be removed')
@@ -1478,7 +1487,7 @@ class LayoutGenerator():
         max_coverage = desired_pebs_coverage
         min_coverage = desired_pebs_coverage - epsilon
         for index, row in df.iterrows():
-            page = row['PAGE_NUMBER']
+            page = int(row['PAGE_NUMBER'])
             weight = row['TLB_COVERAGE']
             updated_total_weight = total_weight - weight
             if updated_total_weight > min_coverage:
@@ -1488,9 +1497,9 @@ class LayoutGenerator():
                 break
         if len(removed_pages) == 0:
             return None, 0
-        new_pages = list(set(base_layout_pages) - set(removed_pages))
+        new_pages = [int(page) for page in (set(base_layout_pages) - set(removed_pages))]
         new_pages.sort()
-        new_pebs_coverage = self.pebs_df.query(f'PAGE_NUMBER in {new_pages}')['TLB_COVERAGE'].sum()
+        new_pebs_coverage = LayoutGeneratorUtils.calculateTlbCoverage(self.pebs_df, new_pages)
 
         print(f'[DEBUG]: total removed pages from {base_layout}: {len(removed_pages)}')
         print(f'[DEBUG]: new layout coverage: {new_pebs_coverage}')
