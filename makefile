@@ -29,8 +29,10 @@ include benchmark.mk
 include $(ROOT_DIR)/common.mk
 
 # a top-level "clean" target, which calls all/clean
-.PHONY: clean
-clean: all/clean
+.PHONY: clean purge
+purge: all/clean
+clean: analysis/clean
+	rm -rf results
 
 # a generic pattern rule for deleting files
 .PHONY: %/delete
@@ -47,3 +49,14 @@ install-prereqs:
 	@echo "Installing system packages and Python virtualenv..."
 	@$(SCRIPTS_ROOT_DIR)/install_prereqs.sh
 
+.PHONY: test_artificat moselect bayesian genetic short_moselect_test short_bayesian_test test_artificat
+moselect: analysis/moselect/scatter.pdf
+bayesian: analysis/bayesian_optimization/scatter.pdf
+genetic: analysis/genetic_selector/scatter.pdf
+short_moselect_test: install-prereqs
+	source .venv/bin/activate
+	$(MAKE) MOSELECT_NUM_OF_REPEATS=1 MOSELECT_NUM_LAYOUTS=25 MOSELECT_MAX_GAP=8 moselect
+short_bayesian_test: install-prereqs
+	source .venv/bin/activate
+	$(MAKE) BAYESIAN_NUM_OF_REPEATS=1 BAYESIAN_NUM_LAYOUTS=25 BAYESIAN_INIT_METHOD=chebyshev_misses bayesian
+test_artificat: short_bayesian_test

@@ -58,8 +58,8 @@ $(MEM_BINS_2MB_CSV_FILE): $(PEBS_EXP_OUT_DIR)
 		$(FIX_DELIM_IN_PERF_MEM_OUTPUT_HEADER) | \
 		$(BIN_ADDRESSES) --width=$$(( 2**21 )) --output=$@ \
 		--pools_range_file=$^/pools_base_pointers.out ;} >> $(dir $@)/analyze.log 2>&1
-	echo "deleting the content of the perf.data file to save storage: $^/perf.data"
-	cat /dev/null > $^/perf.data
+	# echo "deleting the content of the perf.data file to save storage: $^/perf.data"
+	# cat /dev/null > $^/perf.data
 	echo "-----------------------------------------"
 	echo "analyze.log content:"
 	cat $(dir $@)/analyze.log
@@ -78,7 +78,9 @@ $(MEM_ACCESSES_FILE): $(PEBS_EXP_OUT_DIR)
 		$(FIX_DELIM_IN_PERF_MEM_OUTPUT_HEADER) | \
 		$(PARSE_PERF_MEM_RAW_FILE) -o $@ -p $^/pools_base_pointers.out ;} >> $(dir $@)/analyze.log 2>&1
 
-$(MODULE_NAME)/clean:
+$(MODULE_NAME)/full_clean:
 	rm -rf $(PEBS_TARGET_FILES)
 	cd $(dir $@) && rm -f *csv* && rm -f analyze.log
 
+$(MODULE_NAME)/clean:
+	rm -f analyze.log
