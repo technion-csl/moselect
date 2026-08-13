@@ -1,0 +1,11 @@
+PAGE_NUMBER,PAGE_TYPE,NUM_ACCESSES
+0,brk,1000
+1,brk,1
+2,brk,1
+3,brk,1
+100,brk,1
+101,brk,900
+102,brk,200
+103,brk,1
+110,brk,1
+
