@@ -59,4 +59,4 @@ short_moselect_test: install-prereqs
 short_bayesian_test: install-prereqs
 	source .venv/bin/activate
 	$(MAKE) BAYESIAN_NUM_OF_REPEATS=1 BAYESIAN_NUM_LAYOUTS=25 BAYESIAN_INIT_METHOD=chebyshev_misses bayesian
-test_artificat: short_bayesian_test
+test_artificat: short_moselect_test
