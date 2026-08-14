@@ -33,11 +33,11 @@ Before you start building and running Moselect, you need to set and configure th
 - `toy_benchmark` - a small-memory benchmark supplied with this repo to quickly demonstrate how Mosmodel is built using Moselect. It allocates a 1GB array and reads it randomly.
 - `client_server_example` - a demo of how to create a benchmark infrastructure (`pre_run.sh`, `run.sh`, `post_run.sh`) for a client-server workloads, e.g., memcached.
 
-# Artifact Testing (`make test_artificat`)
+# Artifact Testing (`make test_artifact`)
 To run the artifact smoke test, execute:
 
 ```
-make test_artificat
+make test_artifact
 ```
 
 This target currently resolves to `short_moselect_test` in the top-level Makefile and does the following:
@@ -51,7 +51,7 @@ This target currently resolves to `short_moselect_test` in the top-level Makefil
 4. Builds the Moselect analysis output via the `moselect` target (`analysis/moselect/scatter.pdf`).
 5. After the smoke test completes, the measured points are plotted into `analysis/moselect/scatter.pdf`, so the generated layout/measurement cloud can be inspected as the artifact result.
 
-In other words, `make test_artificat` is a lightweight artifact-validation path that executes the full Moselect pipeline (layout generation, benchmark runs, result collection, and analysis plotting) with a smaller budget and single repeat to shorten runtime.
+In other words, `make test_artifact` is a lightweight artifact-validation path that executes the full Moselect pipeline (layout generation, benchmark runs, result collection, and analysis plotting) with a smaller budget and single repeat to shorten runtime.
 
 For a short Bayesian-only smoke test, you can run:
 

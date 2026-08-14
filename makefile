@@ -49,7 +49,7 @@ install-prereqs:
 	@echo "Installing system packages and Python virtualenv..."
 	@$(SCRIPTS_ROOT_DIR)/install_prereqs.sh
 
-.PHONY: test_artificat moselect bayesian genetic short_moselect_test short_bayesian_test test_artificat
+.PHONY: test_artifact moselect bayesian genetic short_moselect_test short_bayesian_test test_artifact
 moselect: analysis/moselect/scatter.pdf
 bayesian: analysis/bayesian_optimization/scatter.pdf
 genetic: analysis/genetic_selector/scatter.pdf
@@ -59,4 +59,4 @@ short_moselect_test: install-prereqs
 short_bayesian_test: install-prereqs
 	source .venv/bin/activate
 	$(MAKE) BAYESIAN_NUM_OF_REPEATS=1 BAYESIAN_NUM_LAYOUTS=25 BAYESIAN_INIT_METHOD=chebyshev_misses bayesian
-test_artificat: short_moselect_test
+test_artifact: short_moselect_test
